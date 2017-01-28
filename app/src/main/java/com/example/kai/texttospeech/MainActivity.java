@@ -1,5 +1,6 @@
 package com.example.kai.texttospeech;
 
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
@@ -21,7 +22,9 @@ public class MainActivity extends AppCompatActivity {
     EditText ed1;
     Button bt1;
     Button bt2;
-    static String toSpeak;
+    String input;
+    String output;
+
     private final int REQ_CODE_SPEECH_INPUT = 100;
     private TextView txtSpeechInput;
     @Override
@@ -43,18 +46,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(ed1.getText().toString().equals("")!=true) {
-                    toSpeak = ed1.getText().toString();
-                    Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
-                    t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+                    input = ed1.getText().toString();
+                    output = input;
                 }
-                else{
-                    toSpeak = txtSpeechInput.getText().toString();
-                    Toast.makeText(getApplicationContext(), toSpeak, Toast.LENGTH_SHORT).show();
-                    t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+                else {
+                    input = txtSpeechInput.getText().toString();
+                    /*if (input.indexOf("search") != -1) {
+                        output = "searching" + input.substring(6);
+                        Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                        intent.putExtra(SearchManager.QUERY, input.substring(6));
+                        startActivity(intent);
 
-
-
+                    } else
+                        output = input;*/
+                    output = AI(input);
                 }
+
+                Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
+                t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
+
+
+
+
             }
         });
         bt2.setOnClickListener(new View.OnClickListener(){
@@ -99,5 +112,18 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    public static String getToSpeak(){return toSpeak;}
+
+    public String AI(String in){
+        String out;
+        if (in.indexOf("search") != -1) {
+            out = "searching" + in.substring(6);
+            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+            intent.putExtra(SearchManager.QUERY, in.substring(6));
+            startActivity(intent);
+
+        } else
+            out = in;
+        return out;
+    }
+
 }
