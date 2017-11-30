@@ -23,26 +23,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:text="Speak"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="51dp"
-        android:id="@+id/speak"
-        style="@style/Animation.AppCompat.DropDownUp"
-        android:elevation="0dp"
-        android:backgroundTint="@android:color/holo_blue_light" />
-
-    <Button
-        android:text="Record"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/record"
-        android:backgroundTint="#de5757" />
 
     <TextView
         android:text=""
@@ -52,4 +32,14 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="97dp"
         android:id="@+id/textView" />
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="80dp"
+        android:id="@+id/talk"
+        android:background="@mipmap/talk"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+
 </RelativeLayout>
