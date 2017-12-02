@@ -12,8 +12,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <uses-permission android:name="android.permission.CALL_PHONE" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -24,4 +22,6 @@
             android:exported="true"></service>
     </application>
 
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 </manifest>

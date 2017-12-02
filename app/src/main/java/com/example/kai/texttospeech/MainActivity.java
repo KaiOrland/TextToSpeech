@@ -1,14 +1,19 @@
 package com.example.kai.texttospeech;
 
+import android.Manifest;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
@@ -28,13 +33,41 @@ public class MainActivity extends AppCompatActivity {
     Button bt2;
     String input;
     String output;
-    String test;
+    private final  int GET_CONTACT_PERMISSION = 1;
+    private final  int GET_CALL_PERMISSION = 2;
+
     private final int REQ_CODE_SPEECH_INPUT = 100;
     private TextView txtSpeechInput;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //check permissions
+        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.READ_CONTACTS)) {
+            /* do nothing*/
+            } else {
+
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.READ_CONTACTS}, GET_CONTACT_PERMISSION);
+            }
+        }
+            if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE)
+                    != PackageManager.PERMISSION_GRANTED){
+                if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                        Manifest.permission.CALL_PHONE)){
+            /* do nothing*/
+                }
+                else{
+
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.CALL_PHONE},GET_CALL_PERMISSION);
+                }
+        }
+
+
         ed1 = (EditText)findViewById(R.id.editText);
        // bt1 = (Button)findViewById(R.id.speak);
         bt2 = (Button)findViewById(R.id.talk);
@@ -69,10 +102,11 @@ public class MainActivity extends AppCompatActivity {
 
                 if(ed1.getText().toString().equals("")!=true) {
                     input = ed1.getText().toString();
+                    txtSpeechInput.setText(input);
                     output = AI(input);
                 }
-                else {
-                    input = txtSpeechInput.getText().toString();
+                else if (input!=null){
+                    txtSpeechInput.setText(input);
                     output = AI(input);
                 }
 
@@ -109,12 +143,17 @@ public class MainActivity extends AppCompatActivity {
 
                     ArrayList<String> result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    txtSpeechInput.setText(result.get(0));
+                    input = result.get(0);
                 }
                 break;
             }
 
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     public String AI(String in){
@@ -127,13 +166,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(in.indexOf("call") != -1){
-            out = "openning phone";
             Intent intent = new Intent(Intent.ACTION_DIAL);
             boolean hasDigit = in.matches(".*\\d+.*");
             if(hasDigit) {
                 String phoneNumber = getPhoneNumber(in);
                 intent.setData(Uri.parse("tel:" + phoneNumber));
             }
+            out = "openning phone";
+            if (in.length()>4 && !hasDigit){
+                String contactName = getContactName(in);
+                String phoneNumber = getPhoneNumberByName(contactName, this);
+                intent.setData(Uri.parse("tel:" + phoneNumber));
+                out = "calling " + contactName;
+            }
+
             startActivity(intent);
         }
         if(in.indexOf("music") != -1){
@@ -169,5 +215,40 @@ public class MainActivity extends AppCompatActivity {
                 phoneNumber = phoneNumber + str.charAt(i);
         }
         return phoneNumber;
+    }
+
+    public String getContactName (String str){
+        String name = "";
+        for (int i = 5; i<str.length(); i++){
+            name = name + str.charAt(i);
+        }
+        return name;
+    }
+
+    public String getPhoneNumberByName(String name,Context context)
+
+    {String number="";
+
+
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        String[] projection    = new String[] {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.NUMBER};
+
+        Cursor people = context.getContentResolver().query(uri, projection, null, null, null);
+
+        int indexName = people.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+        int indexNumber = people.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+
+        people.moveToFirst();
+        do {
+            String Name   = people.getString(indexName);
+            String Number = people.getString(indexNumber);
+            if(Name.contains(name)){return Number.replace("-", "");}
+            // Do work...
+        } while (people.moveToNext());
+
+
+        if(!number.equalsIgnoreCase("")){return number.replace("-", "");}
+        else return number;
     }
 }
