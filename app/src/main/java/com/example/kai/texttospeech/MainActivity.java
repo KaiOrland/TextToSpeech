@@ -1,6 +1,7 @@
 package com.example.kai.texttospeech;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -16,6 +17,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.EditText;
 import android.view.View;
@@ -29,12 +32,14 @@ public class MainActivity extends AppCompatActivity {
 
     TextToSpeech t1;
     EditText ed1;
-    Button bt1;
-    Button bt2;
+    Button recordBtn;
+    Button clearBtn;
     String input;
     String output;
+    public boolean isPromptSpeechActivated = false;
     private final  int GET_CONTACT_PERMISSION = 1;
     private final  int GET_CALL_PERMISSION = 2;
+    private final  int GET_CAMERA_PERMISSION = 3;
 
     private final int REQ_CODE_SPEECH_INPUT = 100;
     private TextView txtSpeechInput;
@@ -54,23 +59,35 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.READ_CONTACTS}, GET_CONTACT_PERMISSION);
             }
         }
-            if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE)
+        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE)
                     != PackageManager.PERMISSION_GRANTED){
-                if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                         Manifest.permission.CALL_PHONE)){
             /* do nothing*/
                 }
-                else{
+            else{
 
-                    ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.CALL_PHONE},GET_CALL_PERMISSION);
-                }
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.CALL_PHONE},GET_CALL_PERMISSION);
+            }
+        }
+        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.CAMERA)){
+            /* do nothing*/
+            }
+            else{
+
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.CAMERA},GET_CAMERA_PERMISSION);
+            }
         }
 
 
         ed1 = (EditText)findViewById(R.id.editText);
-       // bt1 = (Button)findViewById(R.id.speak);
-        bt2 = (Button)findViewById(R.id.talk);
+        clearBtn = (Button)findViewById(R.id.clearBtn);
+        recordBtn = (Button)findViewById(R.id.talk);
         txtSpeechInput = (TextView) findViewById(R.id.textView);
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
@@ -79,28 +96,39 @@ public class MainActivity extends AppCompatActivity {
                     t1.setLanguage(Locale.US);
             }
         });
-     /*  bt1.setOnClickListener(new View.OnClickListener(){
+        ed1.addTextChangedListener(new TextWatcher() {
+            boolean wasTextLength2 = false;
             @Override
-            public void onClick(View v) {
-                if(ed1.getText().toString().equals("")!=true) {
-                    input = ed1.getText().toString();
-                    output = input;
-                }
-                else {
-                    input = txtSpeechInput.getText().toString();
-                    output = AI(input);
-                }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { if(ed1.getText().toString().length()==2) wasTextLength2 = true; else wasTextLength2 = false;}
 
-                Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
-                t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(ed1.getText().toString().length()==1 && wasTextLength2 == false) {
+                    ObjectAnimator.ofFloat(clearBtn, View.ALPHA, 0, 1).setDuration(500).start();
+                    clearBtn.setVisibility(View.VISIBLE);
+                }
+                else if(ed1.getText().toString().length()==0){
+                    ObjectAnimator.ofFloat(clearBtn, View.ALPHA, 1, 0).setDuration(500).start();
+                    clearBtn.setVisibility(View.INVISIBLE);
+                }
             }
-        });*/
-        bt2.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+
+        clearBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ed1.setText("");
+            }
+        });
+
+        recordBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                promptSpeechInput();
 
-                if(ed1.getText().toString().equals("")!=true) {
+                if(ed1.getText().toString().equals("")==false) {
                     input = ed1.getText().toString();
                     txtSpeechInput.setText(input);
                     output = AI(input);
@@ -109,15 +137,20 @@ public class MainActivity extends AppCompatActivity {
                     txtSpeechInput.setText(input);
                     output = AI(input);
                 }
+                else
+                    promptSpeechInput();
 
-                Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
-                t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
+                if(output!=null) {
+                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
+                    t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
+                }
             }
         });
     }
 
 
     private void promptSpeechInput() {
+        isPromptSpeechActivated = true;
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -154,6 +187,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if(!isPromptSpeechActivated){
+            input = null;
+            output = null;
+            txtSpeechInput.setText("");
+        }
+        else{
+            isPromptSpeechActivated = false;
+            txtSpeechInput.setText(input);
+        }
     }
 
     public String AI(String in){
@@ -192,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(SearchManager.QUERY, "weather");
             startActivity(intent);
         }
-        if(in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1)){
+        if((in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1))||in.indexOf("camera")!=-1 ){
             out = "openning camera";
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
             startActivity(intent);

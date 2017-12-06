@@ -41,5 +41,16 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:id="@+id/clearBtn"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/talk"
+        android:layout_alignStart="@+id/talk"
+        android:layout_below="@+id/editText"
+        android:visibility="invisible"
+        android:text="clear" />
+
 
 </RelativeLayout>
