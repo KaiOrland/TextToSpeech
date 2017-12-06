@@ -192,6 +192,11 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(SearchManager.QUERY, "weather");
             startActivity(intent);
         }
+        if(in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1)){
+            out = "openning camera";
+            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            startActivity(intent);
+        }
 
         return out;
     }
