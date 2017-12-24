@@ -2,12 +2,15 @@ package com.example.kai.texttospeech;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -19,6 +22,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.view.View;
@@ -83,8 +88,14 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.CAMERA},GET_CAMERA_PERMISSION);
             }
         }
+        //blur background
+        final View content = findViewById(android.R.id.content).getRootView();
+        if (content.getWidth() > 0) {
+            Bitmap image = BlurBuilder.blur(content);
+            content.setBackground(new BitmapDrawable(getResources(), image));
+        }
 
-
+        //get layout elements
         ed1 = (EditText)findViewById(R.id.editText);
         clearBtn = (Button)findViewById(R.id.clearBtn);
         recordBtn = (Button)findViewById(R.id.talk);
@@ -96,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
                     t1.setLanguage(Locale.US);
             }
         });
+        //show/hide clear button
         ed1.addTextChangedListener(new TextWatcher() {
             boolean wasTextLength2 = false;
             @Override
@@ -116,14 +128,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {}
         });
-
+        //clear button
         clearBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ed1.setText("");
             }
         });
-
+        // record button
         recordBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -148,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    //launch recognizer intent
     private void promptSpeechInput() {
         isPromptSpeechActivated = true;
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -165,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
         }
     }
-
+    //get result from recognizer intent
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
