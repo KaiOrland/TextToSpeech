@@ -14,7 +14,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.Button;
@@ -29,7 +32,6 @@ import android.widget.EditText;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -39,20 +41,33 @@ public class MainActivity extends AppCompatActivity {
     EditText ed1;
     Button recordBtn;
     Button clearBtn;
-    String input;
+    String input = "";
     String output;
-    public boolean isPromptSpeechActivated = false;
+    private SpeechRecognizer sr;
+    private ActionHandler actionHandler;
+    private static final String TAG = "MyStt3Activity";
     private final  int GET_CONTACT_PERMISSION = 1;
     private final  int GET_CALL_PERMISSION = 2;
     private final  int GET_CAMERA_PERMISSION = 3;
-
-    private final int REQ_CODE_SPEECH_INPUT = 100;
+    private final  int GET_AUDIO_PERMISSION = 4;
     private TextView txtSpeechInput;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //check permissions
+        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.RECORD_AUDIO)) {
+            /* do nothing*/
+            } else {
+
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.RECORD_AUDIO}, GET_AUDIO_PERMISSION);
+            }
+        }
         if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
@@ -95,7 +110,9 @@ public class MainActivity extends AppCompatActivity {
             content.setBackground(new BitmapDrawable(getResources(), image));
         }
 
-        //get layout elements
+        //get layout elements and set parameters
+        sr = SpeechRecognizer.createSpeechRecognizer(this);
+        sr.setRecognitionListener(new listener());
         ed1 = (EditText)findViewById(R.id.editText);
         clearBtn = (Button)findViewById(R.id.clearBtn);
         recordBtn = (Button)findViewById(R.id.talk);
@@ -140,14 +157,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(ed1.getText().toString().equals("")==false) {
+                if(ed1.getText().toString().equals("")==false) { //if input is written in edit text
                     input = ed1.getText().toString();
                     txtSpeechInput.setText(input);
-                    output = AI(input);
+                    output = actionHandler.AI(input);
                 }
                 else if (input!=null){
                     txtSpeechInput.setText(input);
-                    output = AI(input);
+                    output = actionHandler.AI(input);
                 }
                 else
                     promptSpeechInput();
@@ -162,152 +179,39 @@ public class MainActivity extends AppCompatActivity {
 
     //launch recognizer intent
     private void promptSpeechInput() {
-        isPromptSpeechActivated = true;
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
-                getString(R.string.speech_prompt));
-        try {
-            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
-        } catch (ActivityNotFoundException a) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.speech_not_supported),
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-    //get result from recognizer intent
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case REQ_CODE_SPEECH_INPUT: {
-                if (resultCode == RESULT_OK && null != data) {
-
-                    ArrayList<String> result = data
-                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    input = result.get(0);
-                }
-                break;
-            }
-
-        }
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"voice.recognition.test");
+        sr.startListening(intent);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(!isPromptSpeechActivated){
             input = null;
             output = null;
             txtSpeechInput.setText("");
+    }
+
+    class listener implements RecognitionListener
+    {
+        public void onReadyForSpeech(Bundle params){}
+        public void onBeginningOfSpeech(){}
+        public void onRmsChanged(float rmsdB){}
+        public void onBufferReceived(byte[] buffer){}
+        public void onEndOfSpeech() {}
+        public void onError(int error)
+        {
+            input = "error " + error;
         }
-        else{
-            isPromptSpeechActivated = false;
+        public void onResults(Bundle results)
+        {
+            String str = new String();
+            ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            input = data.get(0);
             txtSpeechInput.setText(input);
         }
-    }
-
-    public String AI(String in){
-        String out = in;
-        if (in.indexOf("search") != -1) {
-            out = "searching" + in.substring(6);
-            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-            intent.putExtra(SearchManager.QUERY, in.substring(6));
-            startActivity(intent);
-        }
-
-        if(in.indexOf("call") != -1){
-            Intent intent = new Intent(Intent.ACTION_DIAL);
-            boolean hasDigit = in.matches(".*\\d+.*");
-            if(hasDigit) {
-                String phoneNumber = getPhoneNumber(in);
-                intent.setData(Uri.parse("tel:" + phoneNumber));
-            }
-            out = "openning phone";
-            if (in.length()>4 && !hasDigit){
-                String contactName = getContactName(in);
-                String phoneNumber = getPhoneNumberByName(contactName, this);
-                intent.setData(Uri.parse("tel:" + phoneNumber));
-                out = "calling " + contactName;
-            }
-
-            startActivity(intent);
-        }
-        if(in.indexOf("music") != -1){
-            out = "openning music";
-            openApp(this, "com.google.android.music");
-        }
-        if(in.indexOf("weather") != -1){
-            out = "searching for weather";
-            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-            intent.putExtra(SearchManager.QUERY, "weather");
-            startActivity(intent);
-        }
-        if((in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1))||in.indexOf("camera")!=-1 ){
-            out = "openning camera";
-            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-            startActivity(intent);
-        }
-
-        return out;
-    }
-
-    public static boolean openApp(Context context, String packageName) {
-        PackageManager manager = context.getPackageManager();
-        Intent i = manager.getLaunchIntentForPackage(packageName);
-        if (i == null) {
-            return false;
-
-        }
-        i.addCategory(Intent.CATEGORY_LAUNCHER);
-        context.startActivity(i);
-        return true;
-    }
-
-    public String getPhoneNumber(String str){
-        String phoneNumber = "";
-        for(int i =0;i<str.length();i++){
-            if(Character.isDigit(str.charAt(i)))
-                phoneNumber = phoneNumber + str.charAt(i);
-        }
-        return phoneNumber;
-    }
-
-    public String getContactName (String str){
-        String name = "";
-        for (int i = 5; i<str.length(); i++){
-            name = name + str.charAt(i);
-        }
-        return name;
-    }
-
-    public String getPhoneNumberByName(String name,Context context)
-
-    {String number="";
-
-
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        String[] projection    = new String[] {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                ContactsContract.CommonDataKinds.Phone.NUMBER};
-
-        Cursor people = context.getContentResolver().query(uri, projection, null, null, null);
-
-        int indexName = people.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-        int indexNumber = people.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-
-        people.moveToFirst();
-        do {
-            String Name   = people.getString(indexName);
-            String Number = people.getString(indexNumber);
-            if(Name.contains(name)){return Number.replace("-", "");}
-            // Do work...
-        } while (people.moveToNext());
-
-
-        if(!number.equalsIgnoreCase("")){return number.replace("-", "");}
-        else return number;
+        public void onPartialResults(Bundle partialResults){}
+        public void onEvent(int eventType, Bundle params){}
     }
 }
