@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by kayor on 1/1/2018.
@@ -28,8 +29,38 @@ public class ActionHandler {
         String out = in;
         if (in.indexOf("search") != -1) {
             out = "searching" + in.substring(6);
+            String search;
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-            intent.putExtra(SearchManager.QUERY, in.substring(6));
+            if(in.indexOf("about") != -1) {
+                search = in.replace("about", "");
+                search = search.replace("search", "");
+                intent.putExtra(SearchManager.QUERY, search);
+            }
+            else if(in.indexOf("for") != -1){
+                search = in.replace("for", "");
+                search = search.replace("search", "");
+                intent.putExtra(SearchManager.QUERY, search);
+            }
+            else
+                intent.putExtra(SearchManager.QUERY, in.substring(6));
+            myActivity.startActivity(intent);
+        }
+        if ((in.indexOf("what") != -1)||(in.indexOf("why") != -1)||(in.indexOf("who") != -1)||(in.indexOf("when") != -1)||(in.indexOf("how") != -1)) {
+            int result = getRandomNumber(1,3);
+            switch (result){
+                case 1:
+                    out = "Let me check";
+                    break;
+                case 2:
+                    out = "Let's see...";
+                    break;
+                case 3:
+                    out = "good question!";
+                    break;
+            }
+
+            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+            intent.putExtra(SearchManager.QUERY, in);
             myActivity.startActivity(intent);
         }
 
@@ -40,7 +71,7 @@ public class ActionHandler {
                 String phoneNumber = getPhoneNumber(in);
                 intent.setData(Uri.parse("tel:" + phoneNumber));
             }
-            out = "openning phone";
+            out = "opening phone";
             if (in.length()>4 && !hasDigit){
                 String contactName = getContactName(in);
                 String phoneNumber = getPhoneNumberByName(contactName, myActivity);
@@ -51,7 +82,7 @@ public class ActionHandler {
             myActivity.startActivity(intent);
         }
         if(in.indexOf("music") != -1){
-            out = "openning music";
+            out = "opening music";
             openApp(myActivity, "com.google.android.music");
         }
         if(in.indexOf("weather") != -1){
@@ -61,7 +92,7 @@ public class ActionHandler {
             myActivity.startActivity(intent);
         }
         if((in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1))||in.indexOf("camera")!=-1 ){
-            out = "openning camera";
+            out = "opening camera";
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
             myActivity.startActivity(intent);
         }
@@ -70,9 +101,15 @@ public class ActionHandler {
             List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
             String[] apps = new String[0];
             for (int i = 0; i<packages.size(); i++){
-                apps[i] = packages.get(i).nonLocalizedLabel.toString();
+                if(packages.get(i).nonLocalizedLabel!=null){
+                    apps[i] = packages.get(i).nonLocalizedLabel.toString();
+                }
                 if(in.substring(5).equalsIgnoreCase(apps[i])){
-
+                    Intent intent = myActivity.getPackageManager().getLaunchIntentForPackage(packages.get(i).dataDir);
+                    if (intent != null) {//null pointer check in case package name was not found
+                        out = "opening" + in.substring(5);
+                        myActivity.startActivity(intent);
+                    }
                 }
             }
 
@@ -137,5 +174,10 @@ public class ActionHandler {
 
         if(!number.equalsIgnoreCase("")){return number.replace("-", "");}
         else return number;
+    }
+
+    public int getRandomNumber(int min, int max){
+        Random random = new Random();
+        return random.nextInt(max + 1 - min) + min;
     }
 }

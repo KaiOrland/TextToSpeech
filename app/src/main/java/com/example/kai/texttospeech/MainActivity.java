@@ -164,16 +164,14 @@ public class MainActivity extends AppCompatActivity {
                     output = actionHandler.AI(input);
                 }
                 else if (input!=null){
-                    txtSpeechInput.setText(input);
-                    output = actionHandler.AI(input);
+                    input = null;
+                    promptSpeechInput();
                 }
-                else
+                else {
                     promptSpeechInput();
 
-                if(output!=null) {
-                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
-                    t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
                 }
+
             }
         });
     }
@@ -212,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             input = data.get(0);
             txtSpeechInput.setText(input);
+            output = actionHandler.AI(input);
+            Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
+            t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
         }
         public void onPartialResults(Bundle partialResults){}
         public void onEvent(int eventType, Bundle params){}
