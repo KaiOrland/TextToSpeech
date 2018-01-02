@@ -4,23 +4,33 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 
+import java.util.List;
+
 /**
  * Created by kayor on 1/1/2018.
  */
 
-public class ActionHandler extends Activity{
+public class ActionHandler {
+
+    private MainActivity myActivity;
+
+    public ActionHandler(MainActivity myActivity) {
+        this.myActivity = myActivity;
+    }
+
     public String AI(String in){
         String out = in;
         if (in.indexOf("search") != -1) {
             out = "searching" + in.substring(6);
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
             intent.putExtra(SearchManager.QUERY, in.substring(6));
-            startActivity(intent);
+            myActivity.startActivity(intent);
         }
 
         if(in.indexOf("call") != -1){
@@ -33,31 +43,45 @@ public class ActionHandler extends Activity{
             out = "openning phone";
             if (in.length()>4 && !hasDigit){
                 String contactName = getContactName(in);
-                String phoneNumber = getPhoneNumberByName(contactName, this);
+                String phoneNumber = getPhoneNumberByName(contactName, myActivity);
                 intent.setData(Uri.parse("tel:" + phoneNumber));
                 out = "calling " + contactName;
             }
 
-            startActivity(intent);
+            myActivity.startActivity(intent);
         }
         if(in.indexOf("music") != -1){
             out = "openning music";
-            openApp(this, "com.google.android.music");
+            openApp(myActivity, "com.google.android.music");
         }
         if(in.indexOf("weather") != -1){
             out = "searching for weather";
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
             intent.putExtra(SearchManager.QUERY, "weather");
-            startActivity(intent);
+            myActivity.startActivity(intent);
         }
         if((in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1))||in.indexOf("camera")!=-1 ){
             out = "openning camera";
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-            startActivity(intent);
+            myActivity.startActivity(intent);
+        }
+        if(in.indexOf("open") != -1){
+            final PackageManager pm = myActivity.getPackageManager();
+            List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+            String[] apps = new String[0];
+            for (int i = 0; i<packages.size(); i++){
+                apps[i] = packages.get(i).nonLocalizedLabel.toString();
+                if(in.substring(5).equalsIgnoreCase(apps[i])){
+
+                }
+            }
+
+
         }
 
         return out;
     }
+
 
     public static boolean openApp(Context context, String packageName) {
         PackageManager manager = context.getPackageManager();
