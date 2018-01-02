@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     EditText ed1;
     Button recordBtn;
     Button clearBtn;
-    String input = "";
+    String input;
     String output;
     private SpeechRecognizer sr;
     private ActionHandler actionHandler;
@@ -80,11 +80,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE)
-                    != PackageManager.PERMISSION_GRANTED){
+                != PackageManager.PERMISSION_GRANTED){
             if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                        Manifest.permission.CALL_PHONE)){
+                    Manifest.permission.CALL_PHONE)){
             /* do nothing*/
-                }
+            }
             else{
 
                 ActivityCompat.requestPermissions(MainActivity.this,
@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         //get layout elements and set parameters
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new listener());
+        actionHandler = new ActionHandler(this);
         ed1 = (EditText)findViewById(R.id.editText);
         clearBtn = (Button)findViewById(R.id.clearBtn);
         recordBtn = (Button)findViewById(R.id.talk);
@@ -182,15 +183,16 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"voice.recognition.test");
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
         sr.startListening(intent);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-            input = null;
-            output = null;
-            txtSpeechInput.setText("");
+        input = null;
+        output = null;
+        txtSpeechInput.setText("");
     }
 
     class listener implements RecognitionListener
