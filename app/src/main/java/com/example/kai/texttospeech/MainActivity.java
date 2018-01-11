@@ -2,18 +2,12 @@ package com.example.kai.texttospeech;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.app.SearchManager;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.provider.ContactsContract;
+import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -24,14 +18,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.ViewTreeObserver;
-import android.view.Window;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.EditText;
 import android.view.View;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -39,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
 
     TextToSpeech t1;
     EditText ed1;
-    Button recordBtn;
     Button clearBtn;
     String input;
     String output;
@@ -116,8 +110,17 @@ public class MainActivity extends AppCompatActivity {
         actionHandler = new ActionHandler(this);
         ed1 = (EditText)findViewById(R.id.editText);
         clearBtn = (Button)findViewById(R.id.clearBtn);
-        recordBtn = (Button)findViewById(R.id.talk);
         txtSpeechInput = (TextView) findViewById(R.id.textView);
+        final VideoView videoView = (VideoView) findViewById(R.id.videoView);
+        Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
+        videoView.setVideoURI(uri);
+
+
+        videoView.start();
+        videoView.seekTo(2);
+        videoView.pause();
+
+
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -154,10 +157,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // record button
-        recordBtn.setOnClickListener(new View.OnClickListener(){
+        videoView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onTouch(View view, MotionEvent motionEvent) {
 
+                videoView.seekTo(0);
+                videoView.start();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                       videoView.pause();
+                    }
+                }, 1500);
+
+                if(videoView.getCurrentPosition()==1000)
+                    videoView.pause();
                 if(ed1.getText().toString().equals("")==false) { //if input is written in edit text
                     input = ed1.getText().toString();
                     txtSpeechInput.setText(input);
@@ -166,13 +180,23 @@ public class MainActivity extends AppCompatActivity {
                 else if (input!=null){
                     input = null;
                     promptSpeechInput();
+
                 }
                 else {
                     promptSpeechInput();
 
-                }
 
+                }
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        if(!videoView.isPlaying())
+                            videoView.start();
+                    }
+                }, 3000);
+
+                return false;
             }
+
         });
     }
 
@@ -188,6 +212,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        VideoView videoView = (VideoView) findViewById(R.id.videoView);
+        Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
+        videoView.setVideoURI(uri);
+        videoView.start();
+        videoView.seekTo(2);
+        videoView.pause();
         input = null;
         output = null;
         txtSpeechInput.setText("");

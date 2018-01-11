@@ -88,7 +88,10 @@ public class ActionHandler {
         if(in.indexOf("weather") != -1){
             out = "searching for weather";
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-            intent.putExtra(SearchManager.QUERY, "weather");
+            if(in.indexOf("in") != -1)
+                intent.putExtra(SearchManager.QUERY, in.substring(in.indexOf("in") + 3 , in.length()) + " weather");
+            else
+                intent.putExtra(SearchManager.QUERY, "weather");
             myActivity.startActivity(intent);
         }
         if((in.indexOf("take")!=-1 &&(in.indexOf("photo")!=-1 || in.indexOf("picture")!=-1))||in.indexOf("camera")!=-1 ){
