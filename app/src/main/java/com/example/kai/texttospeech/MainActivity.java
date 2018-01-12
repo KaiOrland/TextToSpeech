@@ -3,6 +3,7 @@ package com.example.kai.texttospeech;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -44,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private final  int GET_CALL_PERMISSION = 2;
     private final  int GET_CAMERA_PERMISSION = 3;
     private final  int GET_AUDIO_PERMISSION = 4;
+    private final  int GET_COARSE_LOCATION_PERMISSION = 5;
+    private final  int GET_FINE_LOCATION_PERMISSION = 6;
     private TextView txtSpeechInput;
 
     @Override
@@ -97,6 +100,30 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.CAMERA},GET_CAMERA_PERMISSION);
             }
         }
+        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)){
+            /* do nothing*/
+            }
+            else{
+
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},GET_COARSE_LOCATION_PERMISSION);
+            }
+        }
+        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)){
+            /* do nothing*/
+            }
+            else{
+
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},GET_FINE_LOCATION_PERMISSION);
+            }
+        }
         //blur background
         final View content = findViewById(android.R.id.content).getRootView();
         if (content.getWidth() > 0) {
@@ -108,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new listener());
         actionHandler = new ActionHandler(this);
+        this.registerReceiver(actionHandler.batteryInfoReciever, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         ed1 = (EditText)findViewById(R.id.editText);
         clearBtn = (Button)findViewById(R.id.clearBtn);
         txtSpeechInput = (TextView) findViewById(R.id.textView);
