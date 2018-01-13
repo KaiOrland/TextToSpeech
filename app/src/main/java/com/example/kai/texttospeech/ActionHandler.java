@@ -61,13 +61,13 @@ public class ActionHandler {
         }
         if ((in.contains("what")) || (in.contains("why")) || (in.contains("who")) || (in.contains("when") || (in.contains("how")) || (in.contains("where")))) {
             if (in.contains("what")) {
-                if (in.contains("battery")) {
+                if (in.contains("battery")&& !in.contains(" a ")) {
                     out = "your battery is at " + battery + " percent";
-                } else if (in.contains("time")) {
+                } else if (in.contains("the time")||in.contains("time is it")) {
                     Calendar c = Calendar.getInstance();
                     out = "the time is " + c.get(Calendar.HOUR_OF_DAY)
                             + ":" + c.get(Calendar.MINUTE);
-                } else if (in.contains("date")) {
+                } else if (in.contains("the date")) {
                     Calendar c = Calendar.getInstance();
                     String monthname = (String) android.text.format.DateFormat.format("MMMM", new Date());
                     out = "the date is the " + c.get(Calendar.DAY_OF_MONTH)
@@ -127,6 +127,22 @@ public class ActionHandler {
                 }
                 else
                     defaultQuestionAction(in);
+            } else if(in.contains("who")){
+                if(in.contains("are you")){
+                    int result = getRandomNumber(1, 3);
+                    switch (result) {
+                        case 1:
+                            out = "I'm KaiU, your virtual assistant";
+                            break;
+                        case 2:
+                            out = "Don't you know? I'm KaiU";
+                            break;
+                        case 3:
+                            out = "funny you should ask";
+                            myActivity.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/watch?v=QLbCedNKuxY")));
+                            break;
+                    }
+                }
             }
             else {
                 defaultQuestionAction(in);
@@ -152,10 +168,6 @@ public class ActionHandler {
 
             myActivity.startActivity(intent);
         }
-        if(in.contains("music")){
-            out = "opening music";
-            openApp(myActivity, "com.google.android.music");
-        }
         if(in.contains("weather")){
             out = "searching for weather";
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
@@ -173,21 +185,18 @@ public class ActionHandler {
         if(in.contains("open")){
             final PackageManager pm = myActivity.getPackageManager();
             List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-            String[] apps = new String[0];
-            for (int i = 0; i<packages.size(); i++){
-                if(packages.get(i).nonLocalizedLabel!=null){
-                    apps[i] = packages.get(i).nonLocalizedLabel.toString();
+            String[] apps = new String[pm.getInstalledApplications(0).size()];
+            int i = 0;
+            for (ApplicationInfo packageInfo : packages) {
+                apps[i] = packageInfo.packageName;
+                String applicationName = (String) (packageInfo != null ? pm.getApplicationLabel(packageInfo) : "(unknown)");
+                if(applicationName.equalsIgnoreCase(in.substring(5))){
+                    out = "opening " + in.substring(5);
+                    Intent intent = pm.getLaunchIntentForPackage(apps[i]);
+                    myActivity.startActivity(intent);
                 }
-                if(in.substring(5).equalsIgnoreCase(apps[i])){
-                    Intent intent = myActivity.getPackageManager().getLaunchIntentForPackage(packages.get(i).dataDir);
-                    if (intent != null) {//null pointer check in case package name was not found
-                        out = "opening" + in.substring(5);
-                        myActivity.startActivity(intent);
-                    }
-                }
+                i++;
             }
-
-
         }
 
         return out;
