@@ -76,18 +76,7 @@ public class ActionHandler {
                     defaultQuestionAction(in);
             } else if (in.contains("how")) {
                 if (in.contains("are you")) {
-                    int result = getRandomNumber(1, 3);
-                    switch (result) {
-                        case 1:
-                            out = "I'm fine, thanks";
-                            break;
-                        case 2:
-                            out = "couldn't be better";
-                            break;
-                        case 3:
-                            out = "usually I'm Okay";
-                            break;
-                    }
+                    out = getRandomResponse(new String[]{"I'm fine, thanks", "couldn't be better", "usually I'm Okay"});
 
                 } else
                     defaultQuestionAction(in);
@@ -129,19 +118,9 @@ public class ActionHandler {
                     defaultQuestionAction(in);
             } else if(in.contains("who")){
                 if(in.contains("are you")){
-                    int result = getRandomNumber(1, 3);
-                    switch (result) {
-                        case 1:
-                            out = "I'm KaiU, your virtual assistant";
-                            break;
-                        case 2:
-                            out = "Don't you know? I'm KaiU";
-                            break;
-                        case 3:
-                            out = "funny you should ask";
-                            myActivity.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/watch?v=QLbCedNKuxY")));
-                            break;
-                    }
+                    out = getRandomResponse(new String[]{"I'm KaiU, your virtual assistant", "Don't you know? I'm KaiU", "funny you should ask"});
+                    if(out.equalsIgnoreCase("funny you should ask"))
+                        myActivity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=QLbCedNKuxY")));
                 }
             }
             else {
@@ -203,18 +182,6 @@ public class ActionHandler {
     }
 
 
-    public static boolean openApp(Context context, String packageName) {
-        PackageManager manager = context.getPackageManager();
-        Intent i = manager.getLaunchIntentForPackage(packageName);
-        if (i == null) {
-            return false;
-
-        }
-        i.addCategory(Intent.CATEGORY_LAUNCHER);
-        context.startActivity(i);
-        return true;
-    }
-
     public String getPhoneNumber(String str){
         String phoneNumber = "";
         for(int i =0;i<str.length();i++){
@@ -264,25 +231,16 @@ public class ActionHandler {
         }
     };
     public void defaultQuestionAction(String in){
-        int result = getRandomNumber(1, 3);
-        switch (result) {
-            case 1:
-                out = "Let me check";
-                break;
-            case 2:
-                out = "Let's see...";
-                break;
-            case 3:
-                out = "good question!";
-                break;
-        }
+        out = getRandomResponse(new String[]{"Let me check", "Let's see...", "good question!"});
         Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
         intent.putExtra(SearchManager.QUERY, in);
         myActivity.startActivity(intent);
     }
 
-    public int getRandomNumber(int min, int max){ // generates random number for multi-answer questions
+    public String getRandomResponse(String[] options){ // generates random response for multi-answer questions
         Random random = new Random();
-        return random.nextInt(max + 1 - min) + min;
+        int max = options.length;
+        int i = random.nextInt(max + 1);
+        return options[i];
     }
 }
