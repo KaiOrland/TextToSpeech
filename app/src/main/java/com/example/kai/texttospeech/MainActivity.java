@@ -2,6 +2,7 @@ package com.example.kai.texttospeech;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     Button clearBtn;
     String input;
     String output;
+    private static boolean active = false;
     private SpeechRecognizer sr;
     private ActionHandler actionHandler;
     private static final String TAG = "MyStt3Activity";
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private final  int GET_FINE_LOCATION_PERMISSION = 6;
     private TextView txtSpeechInput;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,8 +133,11 @@ public class MainActivity extends AppCompatActivity {
             Bitmap image = BlurBuilder.blur(content);
             content.setBackground(new BitmapDrawable(getResources(), image));
         }
+        //stop the service
+        stopService(new Intent(this, MyService.class));
 
         //get layout elements and set parameters
+        active = true;
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new listener());
         actionHandler = new ActionHandler(this);
@@ -225,7 +231,9 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
 
+
         });
+        videoView.performClick();
     }
 
     //launch recognizer intent
@@ -238,17 +246,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        stopService(new Intent(this, MyService.class));  //stop the service
+        if(active) {
+            try {
+                if(actionHandler.batteryInfoReciever!=null)
+                    unregisterReceiver(actionHandler.batteryInfoReciever);
+            }
+            catch (IllegalArgumentException e){
+                e.printStackTrace();
+            }
+            startService(new Intent(this, MyService.class));
+            finish();
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, MyService.class));  //stop the service
+        active = false;
+        try {
+            if(actionHandler.batteryInfoReciever!=null)
+                 unregisterReceiver(actionHandler.batteryInfoReciever);
+        }
+        catch (IllegalArgumentException e){
+            e.printStackTrace();
+        }
+        startService(new Intent(this, MyService.class));
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        active = true;
+        stopService(new Intent(this, MyService.class));  //stop the service
         VideoView videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
         videoView.setVideoURI(uri);
         videoView.start();
         videoView.seekTo(2);
-        videoView.pause();
+        videoView.pause(); //set videoview to beginning
         input = null;
         output = null;
-        txtSpeechInput.setText("");
+        txtSpeechInput.setText(""); // reset inputs and outputs
     }
 
     class listener implements RecognitionListener
@@ -264,7 +305,6 @@ public class MainActivity extends AppCompatActivity {
         }
         public void onResults(Bundle results)
         {
-            String str = new String();
             ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             input = data.get(0);
             txtSpeechInput.setText(input);
