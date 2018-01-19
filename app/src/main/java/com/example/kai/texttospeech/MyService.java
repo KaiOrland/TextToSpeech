@@ -4,10 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.IBinder;
+import android.widget.Toast;
 
 public class MyService extends ListeningActivity
 {
-
     @Override
     public IBinder onBind(Intent arg0)
     {
@@ -19,23 +19,26 @@ public class MyService extends ListeningActivity
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if(!MainActivity.isMainActivityRunning) {
+            context = getApplicationContext();
+            VoiceRecognitionListener.getInstance().setListener(this);
+            amanager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            current_volume = amanager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            startListening();
+        }
+        else
+            this.stopSelf();
 
-        context = getApplicationContext();
-        VoiceRecognitionListener.getInstance().setListener(this);
-
-        //mute audio
-       // AudioManager amanager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
-       // amanager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-        startListening();
-        //unmute audio
-      //  amanager.setStreamVolume(AudioManager.STREAM_MUSIC, amanager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy()
     {
+        amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         stopListening();
+        this.stopSelf();
+
     }
 
 

@@ -55,8 +55,10 @@ public class VoiceRecognitionListener implements RecognitionListener {
 
     // If the user said nothing the service will be restarted
     public void onError(int error) {
-        if (listener != null) {
-            listener.restartListeningService();
+        if(!MainActivity.isMainActivityRunning) {
+            if (listener != null) {
+                listener.restartListeningService();
+            }
         }
     }
     public void onEvent(int eventType, Bundle params) { }
@@ -66,4 +68,6 @@ public class VoiceRecognitionListener implements RecognitionListener {
     public void onReadyForSpeech(Bundle params) { }
 
     public void onRmsChanged(float rmsdB) { }
+
+
 }

@@ -15,25 +15,35 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static android.app.Activity.RESULT_OK;
+
 public class ListeningActivity extends Service implements IVoiceControl {
 
     protected SpeechRecognizer sr;
     protected Context context;
-    private AudioManager amanager;
-    private int current_volume;
+    protected AudioManager amanager;
+    protected int current_volume;
 
 
     // starts the service
     protected void startListening() {
         try {
+            //mute audio
+            amanager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+
             initSpeech();
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"voice.recognition.test");
             intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
             sr.startListening(intent);
-            //unmute audio
-            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, 0);
+            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+
+
         } catch(Exception ex) {
             Log.d("SpeechRecognitService", "Bei der Initialisierung des SpeechRecognizers ist ein Fehler aufgetreten");
         }
@@ -41,12 +51,17 @@ public class ListeningActivity extends Service implements IVoiceControl {
 
     // stops the service
     protected void stopListening() {
+        //mute audio
+        current_volume = amanager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        amanager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         if (sr != null) {
             sr.stopListening();
             sr.cancel();
             sr.destroy();
         }
         sr = null;
+       // amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+
     }
 
     protected void initSpeech() {
@@ -69,6 +84,7 @@ public class ListeningActivity extends Service implements IVoiceControl {
         if(voiceCommands.contains("hi Caillou")||voiceCommands.contains("hi Kyle")){
             Intent startIntent = new Intent(context, MainActivity.class);
             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startIntent.putExtra("startListenning", current_volume);
             context.startActivity(startIntent);
         }
         else
@@ -77,17 +93,8 @@ public class ListeningActivity extends Service implements IVoiceControl {
 
     @Override
     public void restartListeningService() {
-        //mute audio
-        amanager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        current_volume = amanager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        amanager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-
         stopListening();
         startListening();
-
-        //unmute audio
-      //  amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, 0);
-
     }
 
 

@@ -3,11 +3,13 @@ package com.example.kai.texttospeech;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.speech.RecognitionListener;
@@ -34,15 +36,15 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextToSpeech t1;
-    EditText ed1;
-    Button clearBtn;
+    TextToSpeech t1; // responsible for speaking the output
+    EditText ed1; //edittext for input
+    Button clearBtn; //clear button for input
     String input;
     String output;
-    private static boolean active = false;
-    private SpeechRecognizer sr;
+    public static boolean isMainActivityRunning = false; // responsible for informing the service when to end
+    private SpeechRecognizer sr;// main speech recognizer
     private ActionHandler actionHandler;
-    private static final String TAG = "MyStt3Activity";
+    private final int REGISTER_REQUEST = 1;
     private final  int GET_CONTACT_PERMISSION = 1;
     private final  int GET_CALL_PERMISSION = 2;
     private final  int GET_CAMERA_PERMISSION = 3;
@@ -50,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
     private final  int GET_COARSE_LOCATION_PERMISSION = 5;
     private final  int GET_FINE_LOCATION_PERMISSION = 6;
     private TextView txtSpeechInput;
+    private  VideoView videoView;
+
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -137,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         stopService(new Intent(this, MyService.class));
 
         //get layout elements and set parameters
-        active = true;
+        isMainActivityRunning = true;
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new listener());
         actionHandler = new ActionHandler(this);
@@ -145,10 +150,10 @@ public class MainActivity extends AppCompatActivity {
         ed1 = (EditText)findViewById(R.id.editText);
         clearBtn = (Button)findViewById(R.id.clearBtn);
         txtSpeechInput = (TextView) findViewById(R.id.textView);
-        final VideoView videoView = (VideoView) findViewById(R.id.videoView);
+        videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
         videoView.setVideoURI(uri);
-
+        startRecWhenCalledByService();
 
         videoView.start();
         videoView.seekTo(2);
@@ -162,6 +167,8 @@ public class MainActivity extends AppCompatActivity {
                     t1.setLanguage(Locale.US);
             }
         });
+
+
         //show/hide clear button
         ed1.addTextChangedListener(new TextWatcher() {
             boolean wasTextLength2 = false;
@@ -233,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         });
-        videoView.performClick();
+
     }
 
     //launch recognizer intent
@@ -244,12 +251,36 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
         sr.startListening(intent);
     }
+    private void startRecWhenCalledByService(){// if activity is called from the service, start recording immediately
+        Intent intent = getIntent();
+        if (intent.hasExtra("startListenning")) {
+            AudioManager amanager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+            //unmute audio
+            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, intent.getIntExtra("startListenning", 0), AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+            videoView.seekTo(0);
+            videoView.start();
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    videoView.pause();
+                }
+            }, 2000);
+            if(videoView.getCurrentPosition()==1000)
+                videoView.pause();
+            promptSpeechInput();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    if(!videoView.isPlaying())
+                        videoView.start();
+                }
+            }, 3000);
+        }
+    }
 
     @Override
     protected void onStop() {
         super.onStop();
         stopService(new Intent(this, MyService.class));  //stop the service
-        if(active) {
             try {
                 if(actionHandler.batteryInfoReciever!=null)
                     unregisterReceiver(actionHandler.batteryInfoReciever);
@@ -258,28 +289,30 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             startService(new Intent(this, MyService.class));
+            isMainActivityRunning = false;
             finish();
-        }
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService(new Intent(this, MyService.class));  //stop the service
-        active = false;
-        try {
-            if(actionHandler.batteryInfoReciever!=null)
-                 unregisterReceiver(actionHandler.batteryInfoReciever);
+        if(isFinishing()) {
+            stopService(new Intent(this, MyService.class));  //stop the service
+            try {
+                if (actionHandler.batteryInfoReciever != null)
+                    unregisterReceiver(actionHandler.batteryInfoReciever);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            startService(new Intent(this, MyService.class));
+            isMainActivityRunning = false;
+            finish();
         }
-        catch (IllegalArgumentException e){
-            e.printStackTrace();
-        }
-        startService(new Intent(this, MyService.class));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        active = true;
+        isMainActivityRunning = true;
         stopService(new Intent(this, MyService.class));  //stop the service
         VideoView videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
@@ -287,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
         videoView.start();
         videoView.seekTo(2);
         videoView.pause(); //set videoview to beginning
+        startRecWhenCalledByService();
         input = null;
         output = null;
         txtSpeechInput.setText(""); // reset inputs and outputs

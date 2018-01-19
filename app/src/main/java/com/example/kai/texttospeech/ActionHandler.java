@@ -240,7 +240,7 @@ public class ActionHandler {
     public String getRandomResponse(String[] options){ // generates random response for multi-answer questions
         Random random = new Random();
         int max = options.length;
-        int i = random.nextInt(max - 1);
+        int i = random.nextInt(max);
         return options[i];
     }
 }
