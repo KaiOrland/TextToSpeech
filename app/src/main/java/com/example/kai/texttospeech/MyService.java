@@ -35,7 +35,8 @@ public class MyService extends ListeningActivity
     @Override
     public void onDestroy()
     {
-        amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+        if(amanager!=null)
+            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         stopListening();
         this.stopSelf();
 

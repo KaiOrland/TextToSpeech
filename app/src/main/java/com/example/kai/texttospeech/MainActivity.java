@@ -228,12 +228,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                 }
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        if(!videoView.isPlaying())
-                            videoView.start();
-                    }
-                }, 3000);
 
                 return false;
             }
@@ -292,29 +286,14 @@ public class MainActivity extends AppCompatActivity {
             isMainActivityRunning = false;
             finish();
     }
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(isFinishing()) {
-            stopService(new Intent(this, MyService.class));  //stop the service
-            try {
-                if (actionHandler.batteryInfoReciever != null)
-                    unregisterReceiver(actionHandler.batteryInfoReciever);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            }
-            startService(new Intent(this, MyService.class));
-            isMainActivityRunning = false;
-            finish();
-        }
-    }
+
 
     @Override
     protected void onResume() {
         super.onResume();
         isMainActivityRunning = true;
         stopService(new Intent(this, MyService.class));  //stop the service
-        VideoView videoView = (VideoView) findViewById(R.id.videoView);
+        videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
         videoView.setVideoURI(uri);
         videoView.start();
@@ -342,6 +321,8 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             input = data.get(0);
             txtSpeechInput.setText(input);
+            if(!videoView.isPlaying())
+                videoView.start();
             output = actionHandler.AI(input);
             Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
             t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
