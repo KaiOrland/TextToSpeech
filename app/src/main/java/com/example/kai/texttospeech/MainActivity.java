@@ -3,6 +3,7 @@ package com.example.kai.texttospeech;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +23,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.EditText;
@@ -304,6 +308,28 @@ public class MainActivity extends AppCompatActivity {
         output = null;
         txtSpeechInput.setText(""); // reset inputs and outputs
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context, menu);
+
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId())
+        {
+            case R.id.preferences:
+                Intent intent = new Intent(this, Preferences.class);
+                startActivity(intent);
+                break;
+            case R.id.always_listen:
+                break;
+        }
+        return true;
+    }
+
 
     class listener implements RecognitionListener
     {
