@@ -136,12 +136,7 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},GET_FINE_LOCATION_PERMISSION);
             }
         }
-        //blur background
-        final View content = findViewById(android.R.id.content).getRootView();
-        if (content.getWidth() > 0) {
-            Bitmap image = BlurBuilder.blur(content);
-            content.setBackground(new BitmapDrawable(getResources(), image));
-        }
+
         //stop the service
         stopService(new Intent(this, MyService.class));
 

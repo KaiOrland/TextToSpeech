@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -22,12 +22,24 @@
                     android:layout_height="wrap_content"
                     android:padding="15dp"
                     android:text="Name: " />
+
                 <TextView
-                    android:id="@+id/name_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="15dp"
-                    android:text="" />
+                    android:text="Enter info"
+                    android:visibility="visible"
+                    android:id="@+id/nameTv"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Change"
+                    android:id="@+id/nameBtn"
+                    android:onClick="changeInfo"
+                    style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+                    />
+
+
             </TableRow>
             <TableRow>
                 <TextView
@@ -36,26 +48,50 @@
                     android:layout_height="wrap_content"
                     android:padding="15dp"
                     android:text="Age: " />
+
                 <TextView
-                    android:id="@+id/age_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="15dp"
-                    android:text="" />
+                    android:text="Enter info"
+                    android:visibility="visible"
+                    android:id="@+id/ageTv"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Change"
+                    android:id="@+id/ageBtn"
+                    android:onClick="changeInfo"
+                    style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+                    />
+
+
             </TableRow>
             <TableRow>
+
                 <TextView
                     android:id="@+id/country"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
                     android:text="Country: " />
+
                 <TextView
-                    android:id="@+id/country_value"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/countryTv"
+                    android:layout_width="124dp"
                     android:layout_height="wrap_content"
-                    android:padding="15dp"
-                    android:text="" />
+                    android:text="Enter info"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/countryBtn"
+                    style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+                    android:layout_width="55dp"
+                    android:layout_height="wrap_content"
+                    android:onClick="changeInfo"
+                    android:text="Change" />
+
+
             </TableRow>
             <TableRow>
                 <TextView
@@ -63,16 +99,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
-                    android:text="Greeting phraze: " />
+                    android:text="Greeting phrase: " />
+
                 <TextView
-                    android:id="@+id/greeting_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="15dp"
-                    android:text="" />
+                    android:text="Enter info"
+                    android:visibility="visible"
+                    android:id="@+id/greetingTv"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Change"
+                    android:id="@+id/greetingBtn"
+                    android:onClick="changeInfo"
+                    style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+                    />
+
+
             </TableRow>
 
         </TableLayout>
     </ScrollView>
 
-</LinearLayout>
+</RelativeLayout>

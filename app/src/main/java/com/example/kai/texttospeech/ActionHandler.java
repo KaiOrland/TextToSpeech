@@ -81,7 +81,6 @@ public class ActionHandler {
                 } else
                     defaultQuestionAction(in);
             } else if (in.contains("where")) {
-                if (in.contains("am I")) {
                     out = "opening maps";
                     LocationManager lm = (LocationManager) myActivity.getSystemService(Context.LOCATION_SERVICE);
                     //request location permissions
@@ -110,9 +109,21 @@ public class ActionHandler {
                     Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     longitude = location.getLongitude();
                     latitude = location.getLatitude();
+                if (in.contains("am I")) {
                     String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                     myActivity.startActivity(intent);
+                }
+                if(in.contains("is")||in.contains("are")){
+                    String target;
+                    if(in.contains("is"))
+                        target = in.substring(9);
+                    else
+                        target = in.substring(10);
+                    Uri gmmIntentUri = Uri.parse("geo:" + latitude + "," + longitude + "?q=" + target);
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    myActivity.startActivity(mapIntent);
                 }
                 else
                     defaultQuestionAction(in);

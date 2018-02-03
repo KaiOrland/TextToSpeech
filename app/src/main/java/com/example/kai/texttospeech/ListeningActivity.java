@@ -52,8 +52,10 @@ public class ListeningActivity extends Service implements IVoiceControl {
     // stops the service
     protected void stopListening() {
         //mute audio
-        current_volume = amanager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        amanager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+        if(amanager!=null) {
+            current_volume = amanager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+        }
         if (sr != null) {
             sr.stopListening();
             sr.cancel();

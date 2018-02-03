@@ -15,7 +15,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Preferences">
+        <activity android:name=".Preferences"
+            android:theme="@style/AlertDialog.AppCompat">
 
         </activity>
         <service
