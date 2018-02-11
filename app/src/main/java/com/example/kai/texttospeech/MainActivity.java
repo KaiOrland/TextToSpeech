@@ -317,7 +317,8 @@ public class MainActivity extends AppCompatActivity {
         {
             case R.id.preferences:
                 Intent intent = new Intent(this, Preferences.class);
-                startActivity(intent);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivityForResult(intent, 1);
                 break;
             case R.id.always_listen:
                 break;
