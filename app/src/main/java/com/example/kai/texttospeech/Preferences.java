@@ -92,10 +92,10 @@ public class Preferences extends Activity implements MyDialog.OnCompleteListener
             case R.id.back:
                // onBackPressed();
 
-               Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
-                finish();
-                break;
+              // Intent intent = new Intent(this, MainActivity.class);
+              // startActivity(intent);
+               finishActivity(1);
+               break;
 
         }
         return true;

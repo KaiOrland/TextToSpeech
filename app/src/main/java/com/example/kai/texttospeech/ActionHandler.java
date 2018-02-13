@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -72,7 +73,15 @@ public class ActionHandler {
                     String monthname = (String) android.text.format.DateFormat.format("MMMM", new Date());
                     out = "the date is the " + c.get(Calendar.DAY_OF_MONTH)
                             + "th of " + monthname + ", " + c.get(Calendar.YEAR);
-                } else
+                } else if(in.contains("your name")){
+                    out = getRandomResponse(new String[]{"My name is KaiU", "Don't you know? I'm KaiU", "You can call me KaiU"});
+                } else if(in.contains("my name")){
+                    SharedPreferences sharedPreferences = myActivity.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    out = "Your name is " + sharedPreferences.getString("name", "not set yet");
+                }
+
+
+                else
                     defaultQuestionAction(in);
             } else if (in.contains("how")) {
                 if (in.contains("are you")) {
@@ -129,7 +138,7 @@ public class ActionHandler {
                     defaultQuestionAction(in);
             } else if(in.contains("who")){
                 if(in.contains("are you")){
-                    out = getRandomResponse(new String[]{"I'm KaiU, your virtual assistant", "Don't you know? I'm KaiU", "funny you should ask"});
+                    out = getRandomResponse(new String[]{"I'm KaiU, your virtual assistant", "Not Siri, that's for sure", "funny you should ask"});
                     if(out.equalsIgnoreCase("funny you should ask"))
                         myActivity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=QLbCedNKuxY")));
                 }

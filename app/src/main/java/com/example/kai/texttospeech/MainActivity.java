@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -152,12 +153,9 @@ public class MainActivity extends AppCompatActivity {
         videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
         videoView.setVideoURI(uri);
-        startRecWhenCalledByService();
-
         videoView.start();
         videoView.seekTo(2);
         videoView.pause();
-
 
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
@@ -166,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                     t1.setLanguage(Locale.US);
             }
         });
-
+        startRecWhenCalledByService();
 
         //show/hide clear button
         ed1.addTextChangedListener(new TextWatcher() {
@@ -268,6 +266,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }, 3000);
         }
+        else{
+            SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            String greeting = sharedPreferences.getString("greeting", "Welcome back " + sharedPreferences.getString("name", "")); //get greeting from shared preferences
+            t1.speak(greeting, TextToSpeech.QUEUE_FLUSH, null); //speak the greeting
+            Toast.makeText(getApplicationContext(), greeting, Toast.LENGTH_SHORT).show();//show the greeting
+        }
     }
 
     @Override
@@ -298,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         videoView.start();
         videoView.seekTo(2);
         videoView.pause(); //set videoview to beginning
-        startRecWhenCalledByService();
+      //  startRecWhenCalledByService();
         input = null;
         output = null;
         txtSpeechInput.setText(""); // reset inputs and outputs
