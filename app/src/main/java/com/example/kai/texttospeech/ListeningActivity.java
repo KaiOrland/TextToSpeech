@@ -62,7 +62,8 @@ public class ListeningActivity extends Service implements IVoiceControl {
             sr.destroy();
         }
         sr = null;
-       // amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+        if(amanager!=null)
+            amanager.setStreamVolume(AudioManager.STREAM_MUSIC, current_volume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
 
     }
 

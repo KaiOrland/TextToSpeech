@@ -78,6 +78,9 @@ public class ActionHandler {
                 } else if(in.contains("my name")){
                     SharedPreferences sharedPreferences = myActivity.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                     out = "Your name is " + sharedPreferences.getString("name", "not set yet");
+                } else if(in.contains("my age")){
+                    SharedPreferences sharedPreferences = myActivity.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    out = "Your age is " + sharedPreferences.getString("age", "not set yet");
                 }
 
 

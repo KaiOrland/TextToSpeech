@@ -208,8 +208,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, 1500);
 
-                if(videoView.getCurrentPosition()==1000)
-                    videoView.pause();
+
                 if(ed1.getText().toString().equals("")==false) { //if input is written in edit text
                     input = ed1.getText().toString();
                     txtSpeechInput.setText(input);
@@ -302,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
         videoView.start();
         videoView.seekTo(2);
         videoView.pause(); //set videoview to beginning
-      //  startRecWhenCalledByService();
+
         input = null;
         output = null;
         txtSpeechInput.setText(""); // reset inputs and outputs
@@ -322,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.preferences:
                 Intent intent = new Intent(this, Preferences.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 startActivityForResult(intent, 1);
                 break;
             case R.id.always_listen:
@@ -336,24 +336,19 @@ public class MainActivity extends AppCompatActivity {
         public void onReadyForSpeech(Bundle params){}
         public void onBeginningOfSpeech(){}
         public void onRmsChanged(float rmsdB){}
-        public void onBufferReceived(byte[] buffer){}
-        public void onEndOfSpeech() {}
-        public void onError(int error)
-        {
-            input = "error " + error;
-        }
+        public void onBufferReceived(byte[] buffer){if(!videoView.isPlaying()) videoView.start();}//continue video until the end
+        public void onEndOfSpeech() {if(!videoView.isPlaying()) videoView.start();}
+        public void onError(int error) {input = "error " + error;}
         public void onResults(Bundle results)
         {
             ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             input = data.get(0);
             txtSpeechInput.setText(input);
-            if(!videoView.isPlaying())
-                videoView.start();
             output = actionHandler.AI(input);
             Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
             t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
         }
-        public void onPartialResults(Bundle partialResults){}
+        public void onPartialResults(Bundle partialResults){if(!videoView.isPlaying()) videoView.start();}
         public void onEvent(int eventType, Bundle params){}
     }
 }
