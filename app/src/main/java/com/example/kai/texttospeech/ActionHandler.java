@@ -120,24 +120,25 @@ public class ActionHandler {
                     Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     longitude = location.getLongitude();
                     latitude = location.getLatitude();
-                if (in.contains("am i")) {
-                    String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                if (in.contains("am I")) {
+                    Uri uri = Uri.parse("geo:" + latitude + "," + longitude);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    intent.setPackage("com.google.android.apps.maps");
                     myActivity.startActivity(intent);
                 }
-                if(in.contains("do I come from")){
+                else if(in.contains("do I come from")){
                     out = "You come from " + sharedPreferences.getString("country", "an unknown place");
                 }
-                if(in.contains("is")||in.contains("are")){
+                else if(in.contains("is")||in.contains("are")){
                     String target;
                     if(in.contains("is"))
                         target = in.substring(9);
                     else
                         target = in.substring(10);
-                    Uri gmmIntentUri = Uri.parse("geo:" + latitude + "," + longitude + "?q=" + target);
-                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                    mapIntent.setPackage("com.google.android.apps.maps");
-                    myActivity.startActivity(mapIntent);
+                    Uri uri = Uri.parse("geo:" + latitude + "," + longitude + "?q=" + target);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    intent.setPackage("com.google.android.apps.maps");
+                    myActivity.startActivity(intent);
                 }
                 else
                     defaultQuestionAction(in);

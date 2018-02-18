@@ -69,76 +69,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //check permissions
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.RECORD_AUDIO)) {
+        String[]permissions = new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_CONTACTS,  Manifest.permission.CALL_PHONE,  Manifest.permission.CAMERA,  Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, };
+        int[] permissionFinals = new int[]{ GET_AUDIO_PERMISSION, GET_CONTACT_PERMISSION, GET_CALL_PERMISSION, GET_CAMERA_PERMISSION,GET_COARSE_LOCATION_PERMISSION, GET_FINE_LOCATION_PERMISSION};
+       for(int i = 0; i<permissions.length; i++) {
+           if (ContextCompat.checkSelfPermission(MainActivity.this, permissions[i])
+                   != PackageManager.PERMISSION_GRANTED) {
+               if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                       permissions[i])) {
             /* do nothing*/
-            } else {
+               } else {
 
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.RECORD_AUDIO}, GET_AUDIO_PERMISSION);
-            }
-        }
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.READ_CONTACTS)) {
-            /* do nothing*/
-            } else {
-
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.READ_CONTACTS}, GET_CONTACT_PERMISSION);
-            }
-        }
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE)
-                != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.CALL_PHONE)){
-            /* do nothing*/
-            }
-            else{
-
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.CALL_PHONE},GET_CALL_PERMISSION);
-            }
-        }
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.CAMERA)){
-            /* do nothing*/
-            }
-            else{
-
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.CAMERA},GET_CAMERA_PERMISSION);
-            }
-        }
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)){
-            /* do nothing*/
-            }
-            else{
-
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},GET_COARSE_LOCATION_PERMISSION);
-            }
-        }
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)){
-            /* do nothing*/
-            }
-            else{
-
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},GET_FINE_LOCATION_PERMISSION);
-            }
-        }
+                   ActivityCompat.requestPermissions(MainActivity.this, permissions, permissionFinals[i]);
+               }
+           }
+       }
 
         //stop the service
         stopService(new Intent(this, MyService.class));
