@@ -33,6 +33,7 @@ import java.util.Random;
 
 public class ActionHandler {
 
+    public SharedPreferences sharedPreferences;
     private MainActivity myActivity;
     public String out;
     public int battery;
@@ -43,7 +44,7 @@ public class ActionHandler {
     }
 
     public String AI(String in) {
-        out = in;
+        sharedPreferences = myActivity.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         if (in.contains("search")) {
             out = "searching" + in.substring(6);
             String search;
@@ -60,8 +61,7 @@ public class ActionHandler {
                 intent.putExtra(SearchManager.QUERY, in.substring(6));
             myActivity.startActivity(intent);
         }
-        if ((in.contains("what")) || (in.contains("why")) || (in.contains("who")) || (in.contains("when") || (in.contains("how")) || (in.contains("where")))) {
-            if (in.contains("what")) {
+        else if (in.contains("what")) {
                 if (in.contains("battery")&& !in.contains(" a ")) {
                     out = "your battery is at " + battery + " percent";
                 } else if (in.contains("the time")||in.contains("time is it")) {
@@ -76,23 +76,22 @@ public class ActionHandler {
                 } else if(in.contains("your name")){
                     out = getRandomResponse(new String[]{"My name is KaiU", "Don't you know? I'm KaiU", "You can call me KaiU"});
                 } else if(in.contains("my name")){
-                    SharedPreferences sharedPreferences = myActivity.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                     out = "Your name is " + sharedPreferences.getString("name", "not set yet");
                 } else if(in.contains("my age")){
-                    SharedPreferences sharedPreferences = myActivity.getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                     out = "Your age is " + sharedPreferences.getString("age", "not set yet");
+                } else if(in.contains("s up")){
+                    out = getRandomResponse(new String[]{"Im Okay, thanks for asking", "I feel good, I knew that I would. So good, so good, I got you", "I'm alright no need to worry"});
                 }
-
-
                 else
                     defaultQuestionAction(in);
-            } else if (in.contains("how")) {
-                if (in.contains("are you")) {
-                    out = getRandomResponse(new String[]{"I'm fine, thanks", "couldn't be better", "usually I'm Okay"});
-
-                } else
-                    defaultQuestionAction(in);
-            } else if (in.contains("where")) {
+        }
+        else if (in.contains("how")) {
+            if (in.contains("are you")) {
+                out = getRandomResponse(new String[]{"I'm fine, thanks", "couldn't be better", "usually I'm Okay"});
+            } else
+                defaultQuestionAction(in);
+        }
+        else if (in.contains("where")) {
                     out = "opening maps";
                     LocationManager lm = (LocationManager) myActivity.getSystemService(Context.LOCATION_SERVICE);
                     //request location permissions
@@ -121,10 +120,13 @@ public class ActionHandler {
                     Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     longitude = location.getLongitude();
                     latitude = location.getLatitude();
-                if (in.contains("am I")) {
+                if (in.contains("am i")) {
                     String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                     myActivity.startActivity(intent);
+                }
+                if(in.contains("do I come from")){
+                    out = "You come from " + sharedPreferences.getString("country", "an unknown place");
                 }
                 if(in.contains("is")||in.contains("are")){
                     String target;
@@ -139,21 +141,19 @@ public class ActionHandler {
                 }
                 else
                     defaultQuestionAction(in);
-            } else if(in.contains("who")){
+        }
+        else if(in.contains("who")){
                 if(in.contains("are you")){
                     out = getRandomResponse(new String[]{"I'm KaiU, your virtual assistant", "Not Siri, that's for sure", "funny you should ask"});
                     if(out.equalsIgnoreCase("funny you should ask"))
                         myActivity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=QLbCedNKuxY")));
                 }
-            }
-            else {
-                defaultQuestionAction(in);
-            }
-
-
+                else if(in.contains("am I"))
+                    out = "Your name is " + sharedPreferences.getString("name", "not set yet");
+                else
+                    defaultQuestionAction(in);
         }
-
-        if(in.contains("call")){
+        else if(in.contains("call")){
             Intent intent = new Intent(Intent.ACTION_DIAL);
             boolean hasDigit = in.matches(".*\\d+.*");
             if(hasDigit) {
@@ -170,7 +170,7 @@ public class ActionHandler {
 
             myActivity.startActivity(intent);
         }
-        if(in.contains("weather")){
+        else if(in.contains("weather")){
             out = "searching for weather";
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
             if(in.contains("in"))
@@ -179,12 +179,12 @@ public class ActionHandler {
                 intent.putExtra(SearchManager.QUERY, "weather");
             myActivity.startActivity(intent);
         }
-        if((in.contains("take") &&(in.contains("photo") || in.contains("picture")))||in.contains("camera")){
+        else if((in.contains("take") &&(in.contains("photo") || in.contains("picture")))||in.contains("camera")){
             out = "opening camera";
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
             myActivity.startActivity(intent);
         }
-        if(in.contains("open")){
+        else if(in.toLowerCase().contains("open")){
             final PackageManager pm = myActivity.getPackageManager();
             List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
             String[] apps = new String[pm.getInstalledApplications(0).size()];
@@ -200,6 +200,12 @@ public class ActionHandler {
                 i++;
             }
         }
+        else if ((in.contains("hi")) || (in.contains("hello")) || (in.contains("good morning")) || (in.contains("good evening") || (in.contains("hey")) || (in.contains("good afternoon")))) {
+            out = getRandomResponse(new String[]{"hey there", "hi, how can I help?", "hello " + sharedPreferences.getString("name", "Master")});
+        }
+        else{
+            out = getRandomResponse(new String[]{"I didn't get that", "come again please", "I'm sorry Dave, I'm afraid I can't do that", "I wasn't programmed yet to do that", "I can't help you with that"});
+        }
 
         return out;
     }
@@ -207,7 +213,7 @@ public class ActionHandler {
 
     public String getPhoneNumber(String str){
         String phoneNumber = "";
-        for(int i =0;i<str.length();i++){
+        for(int i =str.indexOf("call")+5 ;i<str.length();i++){
             if(Character.isDigit(str.charAt(i)))
                 phoneNumber = phoneNumber + str.charAt(i);
         }
@@ -216,7 +222,7 @@ public class ActionHandler {
 
     public String getContactName (String str){
         String name = "";
-        for (int i = 5; i<str.length(); i++){
+        for (int i = str.indexOf("call")+5 ; i<str.length(); i++){
             name = name + str.charAt(i);
         }
         return name;

@@ -6,7 +6,7 @@
         android:id="@+id/group1"
         android:checkableBehavior="none">
         <item android:id="@+id/preferences" android:title="Preferences"></item>
-        <item android:id="@+id/always_listen" android:title="Always Listen"></item>
+        <item android:id="@+id/always_listen" android:title="Always Listen" android:checkable="true"></item>
     </group>
 
 </menu>

@@ -44,9 +44,11 @@ public class MainActivity extends AppCompatActivity {
     TextToSpeech t1; // responsible for speaking the output
     EditText ed1; //edittext for input
     Button clearBtn; //clear button for input
+    Button sendBtn; //send button for input
     String input;
     String output;
     public static boolean isMainActivityRunning = false; // responsible for informing the service when to end
+    public boolean alwaysListen = true;
     private SpeechRecognizer sr;// main speech recognizer
     private ActionHandler actionHandler;
     private final int REGISTER_REQUEST = 1;
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private final  int GET_FINE_LOCATION_PERMISSION = 6;
     private TextView txtSpeechInput;
     private  VideoView videoView;
-
+    private MenuItem alwaysListenItem;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -148,7 +150,10 @@ public class MainActivity extends AppCompatActivity {
         actionHandler = new ActionHandler(this);
         this.registerReceiver(actionHandler.batteryInfoReciever, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         ed1 = (EditText)findViewById(R.id.editText);
+        ed1.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+
         clearBtn = (Button)findViewById(R.id.clearBtn);
+        sendBtn = (Button)findViewById(R.id.sendBtn);
         txtSpeechInput = (TextView) findViewById(R.id.textView);
         videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
@@ -156,10 +161,9 @@ public class MainActivity extends AppCompatActivity {
         videoView.start();
         videoView.seekTo(2);
         videoView.pause();
-
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
-            public void onInit(int status) {
+            public void onInit(int status) {//initialize text to speech object
                 if(status != TextToSpeech.ERROR)
                     t1.setLanguage(Locale.US);
             }
@@ -174,13 +178,18 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(ed1.getText().toString().length()==1 && wasTextLength2 == false) {
+                if(ed1.getText().toString().length()==1 && wasTextLength2 == false) {//in case text is added and not removed - checked by not havind two letters before
                     ObjectAnimator.ofFloat(clearBtn, View.ALPHA, 0, 1).setDuration(500).start();
                     clearBtn.setVisibility(View.VISIBLE);
+                    ObjectAnimator.ofFloat(sendBtn, View.ALPHA, 0, 1).setDuration(500).start();
+                    sendBtn.setVisibility(View.VISIBLE);
+
                 }
                 else if(ed1.getText().toString().length()==0){
                     ObjectAnimator.ofFloat(clearBtn, View.ALPHA, 1, 0).setDuration(500).start();
                     clearBtn.setVisibility(View.INVISIBLE);
+                    ObjectAnimator.ofFloat(sendBtn, View.ALPHA, 1, 0).setDuration(500).start();
+                    sendBtn.setVisibility(View.INVISIBLE);
                 }
             }
 
@@ -192,6 +201,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ed1.setText("");
+            }
+        });
+        //send button
+        sendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(ed1.getText().toString().equals("")==false) { //if input is written in edit text
+                    input = ed1.getText().toString();
+                    txtSpeechInput.setText(input);
+                    output = actionHandler.AI(input);
+                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
+                    t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
+                    ed1.setText("");
+                }
             }
         });
         // record button
@@ -208,13 +231,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, 1500);
 
-
-                if(ed1.getText().toString().equals("")==false) { //if input is written in edit text
-                    input = ed1.getText().toString();
-                    txtSpeechInput.setText(input);
-                    output = actionHandler.AI(input);
-                }
-                else if (input!=null){
+                if(videoView.getCurrentPosition()==1000)
+                    videoView.pause();
+                if (input!=null){
                     input = null;
                     promptSpeechInput();
 
@@ -254,16 +273,11 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     videoView.pause();
                 }
-            }, 2000);
+            }, 1500);
             if(videoView.getCurrentPosition()==1000)
                 videoView.pause();
             promptSpeechInput();
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    if(!videoView.isPlaying())
-                        videoView.start();
-                }
-            }, 3000);
+            
         }
         else{
             SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
@@ -279,12 +293,18 @@ public class MainActivity extends AppCompatActivity {
         stopService(new Intent(this, MyService.class));  //stop the service
             try {
                 if(actionHandler.batteryInfoReciever!=null)
-                    unregisterReceiver(actionHandler.batteryInfoReciever);
+                    unregisterReceiver(actionHandler.batteryInfoReciever);//unregister the battery reciever in actionHandler
             }
             catch (IllegalArgumentException e){
                 e.printStackTrace();
             }
-            startService(new Intent(this, MyService.class));
+
+        SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);//save in sharedpreferences if service should be active and always listen
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("always listen", alwaysListen);
+        editor.apply();
+            if(alwaysListen)
+                startService(new Intent(this, MyService.class));//start the service when app is closed and if always listen has been checked
             isMainActivityRunning = false;
             finish();
     }
@@ -295,13 +315,14 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         isMainActivityRunning = true;
         stopService(new Intent(this, MyService.class));  //stop the service
+        SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);//get info about alwaysListen from sharedpreferences
+        alwaysListen = sharedPreferences.getBoolean("always listen", true);
         videoView = (VideoView) findViewById(R.id.videoView);
         Uri uri = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.video);
         videoView.setVideoURI(uri);
         videoView.start();
         videoView.seekTo(2);
         videoView.pause(); //set videoview to beginning
-
         input = null;
         output = null;
         txtSpeechInput.setText(""); // reset inputs and outputs
@@ -311,7 +332,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.context, menu);
-
+        alwaysListenItem = menu.findItem(R.id.always_listen);
+        if(alwaysListenItem!=null)
+            alwaysListenItem.setChecked(alwaysListen);//set always listen menu item to be checked/unchecked
         return true;
     }
     @Override
@@ -320,11 +343,18 @@ public class MainActivity extends AppCompatActivity {
         {
             case R.id.preferences:
                 Intent intent = new Intent(this, Preferences.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
                 break;
             case R.id.always_listen:
+                if(item.isChecked()){
+                    // If item already checked then unchecked it
+                    item.setChecked(false);
+                    alwaysListen = false;
+                }else {
+                    // If item is unchecked then checked it
+                    item.setChecked(true);
+                    alwaysListen = true;
+                }
                 break;
         }
         return true;
@@ -336,19 +366,24 @@ public class MainActivity extends AppCompatActivity {
         public void onReadyForSpeech(Bundle params){}
         public void onBeginningOfSpeech(){}
         public void onRmsChanged(float rmsdB){}
-        public void onBufferReceived(byte[] buffer){if(!videoView.isPlaying()) videoView.start();}//continue video until the end
-        public void onEndOfSpeech() {if(!videoView.isPlaying()) videoView.start();}
-        public void onError(int error) {input = "error " + error;}
+        public void onBufferReceived(byte[] buffer){}
+        public void onEndOfSpeech() {}
+        public void onError(int error)
+        {
+            input = "error " + error;
+        }
         public void onResults(Bundle results)
         {
             ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             input = data.get(0);
             txtSpeechInput.setText(input);
+            if(!videoView.isPlaying())
+                videoView.start();
             output = actionHandler.AI(input);
             Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
             t1.speak(output, TextToSpeech.QUEUE_FLUSH, null);
         }
-        public void onPartialResults(Bundle partialResults){if(!videoView.isPlaying()) videoView.start();}
+        public void onPartialResults(Bundle partialResults){}
         public void onEvent(int eventType, Bundle params){}
     }
 }

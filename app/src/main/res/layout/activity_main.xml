@@ -13,7 +13,6 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
         android:text=""
         android:ems="10"
         android:layout_alignParentTop="true"
@@ -35,14 +34,6 @@
 
 
 
-    <Button
-        android:id="@+id/clearBtn"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editText"
-        android:visibility="invisible"
-        android:text="clear" />
 
     <VideoView
         android:id="@+id/videoView"
@@ -50,6 +41,28 @@
         android:layout_height="250px"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true" />
+
+    <Button
+        android:id="@+id/sendBtn"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText"
+        android:layout_marginTop="21dp"
+        android:layout_toStartOf="@+id/textView"
+        android:text="send" />
+
+    <Button
+        android:id="@+id/clearBtn"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/sendBtn"
+        android:layout_alignBottom="@+id/sendBtn"
+        android:layout_toEndOf="@+id/textView"
+        android:text="clear"
+        android:visibility="invisible" />
 
 
 </RelativeLayout>

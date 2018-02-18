@@ -84,7 +84,7 @@ public class ListeningActivity extends Service implements IVoiceControl {
     @Override
     public void processVoiceCommands(String  voiceCommands){
         Toast.makeText(getApplicationContext(), voiceCommands, Toast.LENGTH_SHORT).show();
-        if(voiceCommands.contains("hi Caillou")||voiceCommands.contains("hi Kyle")){
+        if(voiceCommands.contains("hi Caillou")||voiceCommands.contains("hi Kyle")||voiceCommands.contains("hey Caillou")||voiceCommands.contains("hey Kyle")){
             Intent startIntent = new Intent(context, MainActivity.class);
             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startIntent.putExtra("startListenning", current_volume);
