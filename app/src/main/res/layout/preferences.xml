@@ -21,14 +21,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
-                    android:text="Name: " />
+                    android:text="Name: "
+                    android:background="@android:color/transparent"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Enter info"
                     android:visibility="visible"
-                    android:id="@+id/nameTv"/>
+                    android:id="@+id/nameTv"
+                    android:background="@android:color/transparent"/>
 
                 <Button
                     android:layout_width="wrap_content"
@@ -47,14 +49,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
-                    android:text="Age: " />
+                    android:text="Age: "
+                    android:background="@android:color/transparent"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Enter info"
                     android:visibility="visible"
-                    android:id="@+id/ageTv"/>
+                    android:id="@+id/ageTv"
+                    android:background="@android:color/transparent"/>
 
                 <Button
                     android:layout_width="wrap_content"
@@ -74,14 +78,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
-                    android:text="Country: " />
+                    android:text="Country: "
+                    android:background="@android:color/transparent"/>
 
                 <TextView
                     android:id="@+id/countryTv"
                     android:layout_width="124dp"
                     android:layout_height="wrap_content"
                     android:text="Enter info"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:background="@android:color/transparent"/>
 
                 <Button
                     android:id="@+id/countryBtn"
@@ -99,14 +105,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="15dp"
-                    android:text="Greeting phrase: " />
+                    android:text="Greeting phrase: "
+                    android:background="@android:color/transparent"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Enter info"
                     android:visibility="visible"
-                    android:id="@+id/greetingTv"/>
+                    android:id="@+id/greetingTv"
+                    android:background="@android:color/transparent"/>
 
                 <Button
                     android:layout_width="wrap_content"
