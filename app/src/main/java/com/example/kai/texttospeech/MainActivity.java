@@ -175,8 +175,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, 1500);
 
-                if(videoView.getCurrentPosition()==1000)
-                    videoView.pause();
                 if (input!=null){
                     input = null;
                     promptSpeechInput();
@@ -210,16 +208,15 @@ public class MainActivity extends AppCompatActivity {
             AudioManager amanager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
             //unmute audio
             amanager.setStreamVolume(AudioManager.STREAM_MUSIC, intent.getIntExtra("startListenning", 0), AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-            videoView.seekTo(0);
-            videoView.start();
+           // videoView.seekTo(0);
+            videoView.resume();
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 public void run() {
                     videoView.pause();
                 }
             }, 1500);
-            if(videoView.getCurrentPosition()==1000)
-                videoView.pause();
+
             promptSpeechInput();
             
         }
