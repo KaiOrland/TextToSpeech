@@ -221,10 +221,16 @@ public class MainActivity extends AppCompatActivity {
             
         }
         else{
-            SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-            String greeting = sharedPreferences.getString("greeting", "Welcome back " + sharedPreferences.getString("name", "")); //get greeting from shared preferences
-            t1.speak(greeting, TextToSpeech.QUEUE_FLUSH, null); //speak the greeting
-            Toast.makeText(getApplicationContext(), greeting, Toast.LENGTH_SHORT).show();//show the greeting
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    SharedPreferences sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    String greeting = sharedPreferences.getString("greeting", "Welcome back " + sharedPreferences.getString("name", "")); //get greeting from shared preferences
+                    t1.speak(greeting, TextToSpeech.QUEUE_FLUSH, null); //speak the greeting
+                    Toast.makeText(getApplicationContext(), greeting, Toast.LENGTH_SHORT).show();//show the greeting
+                }
+            }, 1000);
+
         }
     }
 
