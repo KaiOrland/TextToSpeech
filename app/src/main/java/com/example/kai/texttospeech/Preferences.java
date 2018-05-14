@@ -33,7 +33,7 @@ public class Preferences extends Activity implements MyDialog.OnCompleteListener
         ageTv = (TextView) findViewById(R.id.ageTv);
         countryTv = (TextView) findViewById(R.id.countryTv);
         greetingTv = (TextView) findViewById(R.id.greetingTv);
-        //set texts baased on shared preferences
+        //set texts based on shared preferences
         nameTv.setText(getInfo("name"));
         ageTv.setText(getInfo("age"));
         countryTv.setText(getInfo("country"));

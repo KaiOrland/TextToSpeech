@@ -306,6 +306,12 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        try {
+            super.startActivityForResult(intent, requestCode);
+        } catch (Exception ignored){}
+    }
 
 
     class listener implements RecognitionListener

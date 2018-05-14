@@ -190,16 +190,19 @@ public class ActionHandler {
             List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
             String[] apps = new String[pm.getInstalledApplications(0).size()];
             int i = 0;
+            Intent intent = null;
             for (ApplicationInfo packageInfo : packages) {
                 apps[i] = packageInfo.packageName;
                 String applicationName = (String) (packageInfo != null ? pm.getApplicationLabel(packageInfo) : "(unknown)");
                 if(applicationName.equalsIgnoreCase(in.substring(5))){
                     out = "opening " + in.substring(5);
-                    Intent intent = pm.getLaunchIntentForPackage(apps[i]);
-                    myActivity.startActivity(intent);
+                    intent = pm.getLaunchIntentForPackage(apps[i]);
+                    myActivity.startActivityForResult(intent, 3);
                 }
                 i++;
             }
+            if(out == null || intent == null)
+                out = "Sorry, I couldn't find this app";
         }
         else if ((in.contains("hi")) || (in.contains("hello")) || (in.contains("good morning")) || (in.contains("good evening") || (in.contains("hey")) || (in.contains("good afternoon")))) {
             out = getRandomResponse(new String[]{"hey there", "hi, how can I help?", "hello " + sharedPreferences.getString("name", "Master")});
@@ -273,4 +276,5 @@ public class ActionHandler {
         int i = random.nextInt(max);
         return options[i];
     }
+
 }
